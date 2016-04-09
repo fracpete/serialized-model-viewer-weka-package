@@ -6,6 +6,12 @@ model (or actually any Java serialized file) and display the string
 representation of its content.
 
 
+Releases
+--------
+
+* [2015.3.26](https://github.com/fracpete/serialized-model-viewer-weka-package/releases/download/v2015.3.26/serialized-model-viewer-2015.3.26.zip)
+
+
 How to use packages
 -------------------
 
