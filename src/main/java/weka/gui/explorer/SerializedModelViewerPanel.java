@@ -39,6 +39,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import java.awt.BorderLayout;
@@ -86,8 +87,8 @@ public class SerializedModelViewerPanel
   /** the button for the filechooser. */
   protected JButton m_ButtonFile;
 
-  /** for displaying the serialized file content. */
-  protected JTextArea m_TextContent;
+  /** the tabbed pane for showing the content. */
+  protected JTabbedPane m_TabbedPane;
 
   /**
    * Creates the Experiment panel.
@@ -151,8 +152,8 @@ public class SerializedModelViewerPanel
     panel.add(m_TextFile);
     panel.add(m_ButtonFile);
 
-    m_TextContent = newTextArea();
-    add(newScrollPane(m_TextContent));
+    m_TabbedPane = new JTabbedPane();
+    add(m_TabbedPane, BorderLayout.CENTER);
   }
 
   /**
@@ -250,7 +251,7 @@ public class SerializedModelViewerPanel
     });
     menu.add(menuitem);
 
-    menu.show(m_TextContent, e.getX(), e.getY());
+    menu.show(textArea, e.getX(), e.getY());
   }
 
   /**
@@ -272,25 +273,29 @@ public class SerializedModelViewerPanel
    * @param file the file to load
    */
   protected boolean loadFile(File file) {
-    Object[]        objects;
-    StringBuilder   content;
-    int             i;
-    String          title;
+    Object[]        	objects;
+    StringBuilder   	content;
+    int             	i;
+    JTextArea		m_TextContent;
+
+    while (m_TabbedPane.getTabCount() > 0)
+      m_TabbedPane.removeTabAt(0);
 
     try {
       objects = SerializationHelper.readAll(file.getAbsolutePath());
-      content = new StringBuilder();
-      content.append((objects.length) + " object(s) in file " + file + "\n\n");
       for (i = 0; i < objects.length; i++) {
-        title = (i+1) + ". " + objects[i].getClass().getName();
-        content.append(title + "\n");
-        content.append(title.replaceAll(".", "=") + "\n");
+	content = new StringBuilder();
+        content.append(objects[i].getClass().getName()).append("\n");
         content.append("\n");
         content.append("" + objects[i]);
         content.append("\n");
+        m_TextContent = newTextArea();
+	m_TextContent.setText(content.toString());
+        m_TabbedPane.addTab(objects[i].getClass().getSimpleName(), newScrollPane(m_TextContent));
       }
-      m_TextContent.setText(content.toString());
       m_TextFile.setText("" + file);
+      if (m_TabbedPane.getTabCount() > 0)
+        m_TabbedPane.setSelectedIndex(0);
       return true;
     }
     catch (Exception e) {
