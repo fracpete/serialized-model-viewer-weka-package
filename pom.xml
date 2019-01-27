@@ -5,7 +5,7 @@
 
   <groupId>com.github.fracpete</groupId>
   <artifactId>serialized-model-viewer-weka-package</artifactId>
-  <version>2019.1.27-SNAPSHOT</version>
+  <version>2019.1.27</version>
   <packaging>jar</packaging>
 
   <name>serialized-model-viewer</name>
