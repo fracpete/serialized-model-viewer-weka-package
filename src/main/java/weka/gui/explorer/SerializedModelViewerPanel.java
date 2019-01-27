@@ -15,7 +15,7 @@
 
 /*
  *    SerializedModelViewerPanel.java
- *    Copyright (C) 2015 University of Waikato, Hamilton, New Zealand
+ *    Copyright (C) 2015-2019 University of Waikato, Hamilton, New Zealand
  *
  */
 
@@ -31,6 +31,7 @@ import weka.gui.explorer.Explorer.ExplorerPanel;
 import weka.gui.explorer.Explorer.LogHandler;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -125,7 +126,6 @@ public class SerializedModelViewerPanel
   protected void initGUI() {
     JPanel      panel;
     JLabel      label;
-    JScrollPane scroll;
 
     setLayout(new BorderLayout());
 
@@ -136,7 +136,6 @@ public class SerializedModelViewerPanel
     m_TextFile.setEditable(false);
 
     m_ButtonFile = new JButton("...");
-    //m_ButtonFile.setSize(new Dimension(m_TextFile.getHeight(), m_TextFile.getHeight()));
     m_ButtonFile.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -152,27 +151,53 @@ public class SerializedModelViewerPanel
     panel.add(m_TextFile);
     panel.add(m_ButtonFile);
 
-    m_TextContent = new JTextArea(20, 80);
-    m_TextContent.setEditable(false);
-    m_TextContent.setFont(new Font("monospaced", Font.PLAIN, 12));
-    m_TextContent.addMouseListener(new MouseAdapter() {
+    m_TextContent = newTextArea();
+    add(newScrollPane(m_TextContent));
+  }
+
+  /**
+   * Creates a new text area with popup menu.
+   *
+   * @return		the text area
+   */
+  protected JTextArea newTextArea() {
+    final JTextArea 	result;
+
+    result = new JTextArea(20, 80);
+    result.setEditable(false);
+    result.setFont(new Font("monospaced", Font.PLAIN, 12));
+    result.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
         if (isRightClick(e)) {
           e.consume();
-          showPopup(e);
+          showPopup(result, e);
         }
         else {
           super.mouseClicked(e);
         }
       }
     });
-    scroll = new JScrollPane(m_TextContent);
-    scroll.getHorizontalScrollBar().setBlockIncrement(20);
-    scroll.getHorizontalScrollBar().setUnitIncrement(20);
-    scroll.getVerticalScrollBar().setBlockIncrement(20);
-    scroll.getVerticalScrollBar().setUnitIncrement(20);
-    add(scroll);
+
+    return result;
+  }
+
+  /**
+   * Encapsulates the component in a new scrollpane.
+   *
+   * @param comp	the component to wrap
+   * @return		the scroll pane
+   */
+  protected JScrollPane newScrollPane(JComponent comp) {
+    JScrollPane 	result;
+
+    result = new JScrollPane(comp);
+    result.getHorizontalScrollBar().setBlockIncrement(20);
+    result.getHorizontalScrollBar().setUnitIncrement(20);
+    result.getVerticalScrollBar().setBlockIncrement(20);
+    result.getVerticalScrollBar().setUnitIncrement(20);
+
+    return result;
   }
 
   /**
@@ -199,7 +224,7 @@ public class SerializedModelViewerPanel
    *
    * @param e the mouse event to react to
    */
-  protected void showPopup(MouseEvent e) {
+  protected void showPopup(final JTextArea textArea, MouseEvent e) {
     JPopupMenu  menu;
     JMenuItem   menuitem;
 
@@ -209,7 +234,7 @@ public class SerializedModelViewerPanel
     menuitem.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        copyContent();
+        copyContent(textArea);
       }
     });
     menu.add(menuitem);
@@ -220,7 +245,7 @@ public class SerializedModelViewerPanel
     menuitem.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        saveContent();
+        saveContent(textArea);
       }
     });
     menu.add(menuitem);
@@ -247,7 +272,6 @@ public class SerializedModelViewerPanel
    * @param file the file to load
    */
   protected boolean loadFile(File file) {
-    String          msg;
     Object[]        objects;
     StringBuilder   content;
     int             i;
@@ -277,55 +301,71 @@ public class SerializedModelViewerPanel
 
   /**
    * Copies the current content to the clipboard.
+   *
+   * @param textArea 	the text are to use
    */
-  protected void copyContent() {
+  protected void copyContent(JTextArea textArea) {
     String            content;
     StringSelection   selection;
     Clipboard         clipboard;
 
-    if (m_TextContent.getSelectedText() == null)
-      content = m_TextContent.getText();
+    if (textArea.getSelectedText() == null)
+      content = textArea.getText();
     else
-      content = m_TextContent.getSelectedText();
+      content = textArea.getSelectedText();
 
     selection = new StringSelection(content);
     clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     clipboard.setContents(selection, selection);
-
   }
 
   /**
    * Saves the current content to a file.
+   *
+   * @param textArea 	the text area to use
    */
-  protected void saveContent() {
-    int               retVal;
-    String            content;
-    File              file;
-    BufferedWriter    writer;
+  protected void saveContent(JTextArea textArea) {
+    int               	retVal;
+    String            	content;
+    File              	file;
+    FileWriter		fwriter;
+    BufferedWriter 	bwriter;
 
     retVal = m_FileChooserContent.showSaveDialog(this);
     if (retVal != JFileChooser.APPROVE_OPTION)
       return;
 
-    if (m_TextContent.getSelectedText() == null)
-      content = m_TextContent.getText();
+    if (textArea.getSelectedText() == null)
+      content = textArea.getText();
     else
-      content = m_TextContent.getSelectedText();
+      content = textArea.getSelectedText();
 
-    file = m_FileChooserContent.getSelectedFile();
-    writer = null;
+    file    = m_FileChooserContent.getSelectedFile();
+    fwriter = null;
+    bwriter = null;
     try {
-      writer = new BufferedWriter(new FileWriter(file));
-      writer.write(content);
-      writer.flush();
+      fwriter = new FileWriter(file);
+      bwriter = new BufferedWriter(fwriter);
+      bwriter.write(content);
+      bwriter.flush();
     }
     catch (Exception e) {
       showErrorMessage("Error writing content", "Failed to write content to " + file, e);
     }
     finally {
-      if (writer != null) {
+      if (bwriter != null) {
         try {
-          writer.close();
+          bwriter.flush();
+          bwriter.close();
+        }
+        catch (Exception e) {
+          // ignored
+        }
+      }
+      if (fwriter != null) {
+        try {
+          fwriter.flush();
+          fwriter.close();
         }
         catch (Exception e) {
           // ignored
