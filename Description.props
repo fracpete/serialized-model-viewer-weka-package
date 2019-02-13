@@ -5,10 +5,10 @@
 PackageName=serialized-model-viewer
 
 # Version (required)
-Version=2019.1.27
+Version=2019.2.14
 
 #Date (year-month-day)
-Date=2019-01-27
+Date=2019-02-14
 
 # Title (required)
 Title=Serialized Model Viewer
@@ -29,7 +29,7 @@ License=GPL 3.0
 Description=Allows the user to output the string representations of serialized models.
 
 # Package URL for obtaining the package archive (required)
-PackageURL=https://github.com/fracpete/serialized-model-viewer-weka-package/releases/download/v2019.1.27/serialized-model-viewer-2019.1.27.zip
+PackageURL=https://github.com/fracpete/serialized-model-viewer-weka-package/releases/download/v2019.2.14/serialized-model-viewer-2019.2.14.zip
 
 # URL for further information
 URL=https://github.com/fracpete/serialized-model-viewer-weka-package
