@@ -21,6 +21,7 @@
 
 package weka.gui.explorer;
 
+import weka.core.Drawable;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.gui.ComponentHelper;
@@ -277,6 +278,7 @@ public class SerializedModelViewerPanel
     StringBuilder   	content;
     int             	i;
     JTextArea		m_TextContent;
+    String		graph;
 
     while (m_TabbedPane.getTabCount() > 0)
       m_TabbedPane.removeTabAt(0);
@@ -292,6 +294,21 @@ public class SerializedModelViewerPanel
         m_TextContent = newTextArea();
 	m_TextContent.setText(content.toString());
         m_TabbedPane.addTab(objects[i].getClass().getSimpleName(), newScrollPane(m_TextContent));
+        if (objects[i] instanceof Drawable) {
+          try {
+            graph = ((Drawable) objects[i]).graph();
+	    content = new StringBuilder();
+	    content.append(graph);
+	    content.append("\n");
+	    m_TextContent = newTextArea();
+	    m_TextContent.setText(content.toString());
+	    m_TabbedPane.addTab(objects[i].getClass().getSimpleName() + " (graph)", newScrollPane(m_TextContent));
+	  }
+	  catch (Exception e) {
+            System.err.println("Failed to obtain graph from: " + file + "/" + objects[i].getClass().getName());
+            e.printStackTrace();
+	  }
+	}
       }
       m_TextFile.setText("" + file);
       if (m_TabbedPane.getTabCount() > 0)
